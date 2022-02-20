@@ -1,0 +1,34 @@
+---
+title: 'R Programming: Week 1'
+author: "Mike Talley"
+date: "2/20/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Coercion of Different Data Types
+
+R will not stop you from entering different data types into a vector, but when you go to operate on the vector, R will have to "coerce" the data into being a uniform data type. This inevitably can cause issues. One way to solve this is to use a list. Lists are a vector that can contain multiple data types, and are very important in R.
+```{r}
+x <- 0:6    #Create a vector of numbers
+class(x)    
+as.numeric(x)
+as.logical(x)
+as.character(x)
+
+##An example of coercion not working.
+x <- c("a", "b", "c")
+as.numeric(x)         #No way to make this work.
+as.logical(x)         
+as.complex(x)
+
+##A list
+x <- list(1, "a", TRUE, 1 + 4i)
+x
+```
+
