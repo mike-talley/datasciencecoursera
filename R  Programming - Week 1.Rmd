@@ -11,24 +11,112 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-##Coercion of Different Data Types
+## Coercion of Different Data Types
 
 R will not stop you from entering different data types into a vector, but when you go to operate on the vector, R will have to "coerce" the data into being a uniform data type. This inevitably can cause issues. One way to solve this is to use a list. Lists are a vector that can contain multiple data types, and are very important in R.
 ```{r}
-x <- 0:6    #Create a vector of numbers
+x <- 0:6    # Create a vector of numbers
 class(x)    
 as.numeric(x)
 as.logical(x)
 as.character(x)
 
-##An example of coercion not working.
+## An example of coercion not working.
 x <- c("a", "b", "c")
 as.numeric(x)         #No way to make this work.
 as.logical(x)         
 as.complex(x)
 
-##A list
+## A list
 x <- list(1, "a", TRUE, 1 + 4i)
 x
+```
+## Binding Objects
+We can bind objects or vectors using cbind() and rbind()
+
+## Factors
+Factors are used to represent categorical data. They are essentially integers that have labels. It's often better to use a factor such as Male / Female, rather than an integer of 1 / 2. Below you'll see that R specifies the levels of this vector as "no" and "yes".
+
+R will inherently use the first level alphabetically as the baseline level. If you want R to use a different level ("yes" for example) as the baseline, you need to specifically tell it that. 
+
+```{r}
+x <- factor(c("yes","yes","no","yes","no"))
+x
+table(x)    #Gives a frequency count
+unclass(x)  #It will assign an integer to each value. Not necessary, but useful to know. 
+
+x <- factor(c("yes","yes","no","yes","no"),
+            levels = c("yes", "no"))
+x
+```
+## Missing Values
+is.na() is used to test objects to see if they are NA, while is.nan() will test for NaN. There can be both integer and character NA, so it still does have a class assigned to it. Also, NaN is a NA, but the converse is not always true. NaN are mathmatical values while NA is everything else. 
+
+## Data Frames
+These are most commonly used for storing tabular data. They CAN store different classes of objects, like a list. Be wary of coercion. They are also special in that they have an attribute called "row.names".
+
+## Reading in Data
+read.table and read.csv are the two common ways of importing data. While most datasets do not require you to input many of the arguments, explicitly doing so can often help large datasets run faster. Using the colClasses argument can sometimes make the code run twice as fast. 
+
+## Dputing and Dumping Data
+A little more complicated. But dput and dump help create textual files to store the data. Can help prevent corruption down the road. 
+
+## Connections
+Can be useful for creating a connection to a certain file or object or location. A useful part of this is con <- url(), where you can connect to a webpage and read data from it. 
+
+## Subsetting
+[ returns an object of the same class, but can select more than one element.
+
+[[ extracts a singular element, but the class may not be the same.
+
+$ is used to extract elements of a list of df by name.
+
+A benefit of [[ is that it can extract computed objects, while $ can only select a literal name that exists in the list. It can also use sequences within it. 
+```{r}
+x <- list(foo = 1:4, bar = 0.6, baz = "hello")
+name <- "foo"
+x[[name]]     ## A computed index for 'foo'
+x$name        ## 'name' is not in this list.
+x$foo         ##Call on foo explicitly.
+
+x <- list(a = list(10, 12, 14), b = c(3.14, 2.81))
+x[[c(1, 3)]]    ## Third object of first list.
+x[[1]][[3]]     ## Same
+x[[c(2,1)]]     ## First object of second list.
+```
+You can subset a matrix by specifying row and column (where the element intersects both), or by specifying a row OR column and it will return a vector. It will usually return a value or vector, not a matrix, with no dimensions. If for some reason you wanted to preserve those dimensions, you would use the "drop" command, to tell it not to drop those dimensions. 
+```{r}
+x <- matrix(1:6, 2, 3)
+x[1, ]
+x[1, drop = FALSE]
+```
+
+You can also use a partial match when subsetting, which can be useful for time saving if you are typing away rapidly. aardvark is an annoying word to type. To do this, you either need to use $, or to be very specific with [[.
+```{r}
+x <- list(aardvark = 1:5)
+x$a         ## Partial match
+x[["a"]]    ## The double bracket doesn't natrually do a partial match
+x[["a", exact = FALSE]]
+```
+
+## Removing Missing or NA Values
+Most realistic data has a lot of missing values. Often times we need to remove those. A solution is to create a logical vector that tells you where the NAs are, allowing you to remove them via subsetting. 
+
+We can also use the complete.cases() function to help.
+```{r}
+x <- c(1, 2, NA, 4, NA, 5)
+bad <- is.na(x)
+x[!bad]           ## Return elements that are not bad.
+
+x <- c(1, 2, NA, 4, NA, 5)
+y <- c("a", "b", NA, "d", NA, "f")
+good <- complete.cases(x, y)
+good
+x[good]
+y[good]
+
+airquality[1:6, ]   ## This has missing values
+good <- complete.cases(airquality)
+airquality[good, ][1:6, ]   ## Subset out missing values
 ```
 
