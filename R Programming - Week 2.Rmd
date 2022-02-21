@@ -1,0 +1,85 @@
+---
+title: "R Programming - Week 2"
+author: "Mike Talley"
+date: "2/20/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Control Structures
+
+## If-else
+
+We can tell R to do something IF certain conditions are met. The ELSE is optional, but will specify what to do if the conditions are not met. 
+```{r}
+x <- 5
+
+if(x > 3) {y <- 10} else {y <- 0}
+
+#or
+
+y <- if(x > 3) {10} else {0}
+```
+
+## For loops
+
+For loops are typically the most common type of loops used. They are most commonly used for iterating over the elements of an object (list, vector, etc). The basic idea is that you have a loop index which is typically called i, but if you have many loops you might say j, k, l, et cetera. And a loop index is going to take the i variable and each time it loops it will give it a value, and then will exit when finished.
+
+```{r}
+for(i in 1:10) {print(i)}
+
+x <- c("a", "b", "c", "d")
+
+for(i in 1:4) {print(x[i])}
+
+for(i in seq_along(x)) {print(x[i])}
+
+for(letter in x) {print(letter)}
+
+for(i in 1:4) print(x[i])
+```
+You can also have nested loops, or a loop within another loop. Be careful with this though, as going more than 2-3 levels deep is hard to understand/read. Like the movie inception!
+
+```{r}
+x <- matrix(1:6, 2, 3)
+
+for(i in seq_len(nrow(x))) {
+  for(j in seq_len(ncol(x))) {
+    print(x[i, j])
+  }
+}
+```
+## While Loops
+
+This is the other basic looping function in R. This tests a condition, and if true, executes the loop body. Once it is executed, it will test the condition again, and so forth. They can result in an inifite loop if done incorrectly, so be careful!
+
+```{r}
+## This loop will count up to 10, and when it reaches 10, the condition is then FALSE, so the loop will stop.
+
+count <- 0
+while(count < 10) {
+  print(count)
+  count <- count + 1
+}
+```
+You can also use more than one condition in the test, which is handy. These conditions are ALWAYS EVALUATED FROM LEFT TO RIGHT. The following loop starts with z = 5. If z is between 3 and 10, it will print, and flip a coin. If heads, it adds 2 to z. If tails, it subtracts 2. This will continue until the original conditions are false.
+
+```{r}
+z <- 5
+
+while (z >= 3 && z <= 10) {
+  print(z)
+  coin <- rbinom(1, 1, 0.5)
+  
+  if(coin == 1) { ## random walk
+    z <- z + 2
+  } else {z <- z - 2}
+  }
+```
+
+
+
+
