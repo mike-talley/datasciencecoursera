@@ -70,7 +70,7 @@ You can also use more than one condition in the test, which is handy. These cond
 ```{r}
 z <- 5
 
-while (z >= 3 && z <= 10) {
+while(z >= 3 && z <= 10) {
   print(z)
   coin <- rbinom(1, 1, 0.5)
   
@@ -79,7 +79,78 @@ while (z >= 3 && z <= 10) {
   } else {z <- z - 2}
   }
 ```
+## Repeat
+
+These loops are endless, and are uncommon in statistics, but could have useful applications elsewhere. Algorithms can be dangerous if they never stop, so it is useful to define a set stopping point. 
+
+## Next
+
+This is used when you want to skip a portion or certain number of loops. Below is a next function where we skip the first two iterations.
+
+```{r}
+for(i in 1:10) {
+  if(i <= 2) {   ## Skip the first 2 iterations until i > 2
+    next
+  }
+  print(i)
+}
+```
+## Functions
+
+## Creating Our First Functions
+
+```{r}
+## Super simple function to add two numbers together.
+add2 <- function(x, y) {
+  x + y
+}
+add2(3, 5)
 
 
+## A new function to return values greater than 10
+above10 <- function(x) {
+  use <- x > 10
+  x[use]
+}
+above10(c(5, 10, 15, 20))
 
+
+## A function to return values above another number that we choose.
+above <- function(x, n) {
+  use <- x > n
+  x[use]
+}
+x <- 1:20
+above(x, 14)
+
+## We can make n be the same number unless otherwise specified.
+above <- function(x, n = 10) {
+  use <- x > n
+  x[use]
+}
+x <- 1:20
+above(x)
+above(x, 14)
+
+```
+So far these are super simple functions on a single vector. The following will be a function applied to a matrix or dataframe. This one will calculate the mean of each column. We will use a for loop, and each time it loops it will return the mean of the next column.
+
+We need to start by determining the number of columns in the vector, so it knows how many times to loop. We then create the vector 'means', and define it as a numeric = to the value of nc. With that all set up, we can create our for loop. We plug in 1:nc to tell it how many times to loop i. When it loops, it will be creating a vector means[i]. That vector is created by getting the mean of each column, mean(x[, i]).
+
+The removeNA section is an option we can build in to automatically remove any NA values. This would have been a game changer on last weeks quiz. 
+
+```{r}
+columnmean <- function(x, removeNA = TRUE) {
+  nc <- ncol(x)                       ## How many columns does it have
+  means <- numeric(nc)                ## Defining means as a numeric vector
+  for(i in 1:nc) {                    ## How many times are we looping? 1:nc
+    means[i] <- mean(x[, i], na.rm = removeNA)  
+  }                           ## When running, what are we looking for? 
+  means                       ## Return means, so we list it at the end.
+}
+
+columnmean(airquality)
+columnmean(airquality, FALSE)
+```
+Because our function automatically removes NA, we still have the option to include them, we just need to specify that in the command. 
 
