@@ -2,7 +2,9 @@
 title: "R Programming - Week 2"
 author: "Mike Talley"
 date: "2/20/2022"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
