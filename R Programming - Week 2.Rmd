@@ -154,3 +154,192 @@ columnmean(airquality, FALSE)
 ```
 Because our function automatically removes NA, we still have the option to include them, we just need to specify that in the command. 
 
+## More Info About Functions
+
+Functions can be passed as arguments to other objects. They can also be nested within other functions. 
+The return value will be the last expression in the body to be evaluated. 
+
+Functions also have "named arguments", which could potentially have default values. The "formal arguments" are the arguments that are included in the function definition. formals() will return a list of all the formal arguments. It's important to know that not every function call in R uses all of the formal arguments. Function arguments can be missing or have default values. 
+
+### Positional Matching and Matching by Name
+
+You can combine positional matching and matching by name. This is kind of confusing, but generally, a function matches its arguments IN ORDER (formula -> data -> subset -> weights -> etc.). If your function explicity names something, it does not matter what order it is. The formula will remove that from the list, and fill the other arguments IN ORDER. In the following example, we can specify the data and model arguments, so both of these options fill the remaining arguments in order. 
+
+args(lm)
+
+lm(data = mydata, y - x, model = FALSE, 1:100)
+lm(y - x, mydata, 1:100, model = FALSE)
+
+Named arguemnts can be useful in the command line since they will show up in a list of arguments. 
+
+### Partial Matching
+
+Function arguments can also be partially matched. This is useful for interactive work, but not so much for programming. R will look for an agument name that matches the partial name you give it. The order of operations that R will follow when given an arguemnt is:
+
+1: Check for exact match to a named argument.
+2: Check for a partial match to the named argument. 
+3: Check for a positial match. 
+
+## Defining a Function
+
+f <- function(a, b = 1, c = 2, d = NULL) {}
+
+You can choose to specify a value (a) or not, and you can also choose to define something as NULL, which is a valid entry. 
+
+### Lazy Evaluation
+
+Arguments are evaluated "lazily", meaning only as needed. In the following functions, we name two argumetns as (a, b). When we run the function however, we only give it one value. R will positionally match that to (a, ) and choose to leave ( ,b) alone. Because ( ,b) is never evaluated, it does not throw an error.
+
+In the second example, it does throw an error, but only after a was evaluated. Remember, functions evaluate in order, and the last defined argument is what will be returned. 
+```{r}
+f <- function(a, b){
+  a^2
+}
+f(2)
+
+# f <- function(a, b){
+  # print(a)
+  # print(b)
+# }
+# f(45)
+```
+### The "..." Argument
+
+The ... argument defines a variable number of arguments that are to be passed on to other portions of the function. It's often used to extend a function without having to copy all the arguments each time. In the following example, it passes all the function arguments down to plot, and so on. 
+
+```{r}
+myplot <- function(x, y, type = "l", ...) {
+  plot(x, y, type = type, ...)
+}
+myplot(c(1,4,9), c(2,3,7))
+```
+
+It can also be used in examples like the paste and cat functions. It has no way of knowing how many entries there will be, so it leaves that argument as ...
+### *
+A caveat to using ... is that anything that comes after it MUST be explicitly defined. Makes sense, because R does not know when the list of arguments starts and ends otherwise.
+```{r}
+args(paste)
+
+args(cat)
+
+paste("a", "b", sep = ";")
+#versus
+paste("a", "b", se = ":")
+```
+
+## A Diversion on Binding Values to a Symbol
+
+How does R know what values to assign to symbols, especially if we write duplicates of pre existing values. An example would be lm <- function(x) ( x * x ), plus the normal command lm. How does it know which we are reffering to?
+
+1. Search the global environment (your work envir. in R), for a name matching the one requested. So it would return the function we made. 
+
+2. Search the namespaces of each of the packages on the search list. To see what it's searching, use search(). 
+
+The order of packages in the search list matters! If you load a package into R, it automatically gets put into position 2, and everything else will get shifted down a level. It IS possible to have an object and a function named c, occupying different namespaces. 
+
+## Scoping Rules
+
+This is the main feature seperating R from the S language. These rules determine how a value is associated with a free variable in a function. R uses what is called "lexical/static scoping", which is the alternative to dynamic scoping. This is specifically usefuly for simplifying statistical computations. 
+
+The following function has two formal arguments, (x, y). The body of the function also has a free variable, called (z), because it was not defined in the function header. 
+
+```{r}
+f <- function(x, y) {
+  x^2 + y / z
+}
+```
+
+### Lexical Scoping
+
+"the values of free variables are searched for in the environment in which the function was defined."
+
+But what is an environment..?
+
+  - A collection of pairs, usually consisting of a symbol (x) and a value (3.14).
+
+  - Every environment has a parent environment. It's possible for an environment to    have multiple "children" environments as well.
+
+  - The only environment without a parent is the empty environment. 
+
+  - A function + an environment = a closure or function closure. 
+
+Order of search for the free symbol...
+env. -> parent env. -> parent env -> etc. -> top-level (global) env -> search directory -> "empty environemnt".
+If not found by the empty env, a code is thrown. 
+
+Usually, functions are defined in the global environment, and variables exist within the users workspace. This is the "normal" thing to do, which is how other languages work, like C. In R however, you can also define a function INSIDE another function / environment. Function inception!
+
+A downside to lexical scoping is that all objects must be stored in memory, which gets harder as datasets get exponentially larger. Also, functions will then need to carry a pointer to their respective defining environments, making the code a little more complicated. 
+
+```{r}
+make.power <- function(n) {
+  pow <- function(x) {
+          x ^ n
+  }
+  pow
+}
+
+cube <- make.power(3)
+square <- make.power(2)
+cube(3)
+square(2)
+```
+In the above example, the cube command assigns 3 to the value of n, and the square command assigns 2 to the value of n. When you run cube(3), n was already defined inside the make.power command, so cube(3) is defining x. 
+
+## Exploring a Function
+
+We can explore what is inside of a function's environment using the list objects command ls(). We can also use the get() command to pull out a specific object. 
+
+```{r}
+ls(environment(cube))
+get("n", environment(cube))
+ls(environment(square))
+get("n", environment(square))
+```
+
+## Application of Scoping
+
+Optimization routines like optim(), nlm() and optimize() requires you to pass a function where the argument is a vector of fixed paramters. Sometimes it may be useful to keep these parameters fixed.
+
+Super complicated example, but using a function that contains all the info needed and can be changed at will. 
+```{r}
+make.NegLogLike <- function(data, fixed=c(FALSE, FALSE)) {
+  params <- fixed
+  function(p) {
+    params[!fixed] <- p
+    mu <- params[1]
+    sigma <- params[2]
+    a <- -0.5*length(data)*log(2*pi*sigma^2)
+    b <- -0.5*sum((data-mu)^2) / (sigma^2)
+    -(a + B)
+   }
+}
+```
+
+## Coding Standards
+
+1. Always try to use text files / a text editor when writing code. Its the easiest way to keep track of easily usable code. 
+
+2. Indent your code. How much is up for debate, but use indents to help someone distinguish what's happening in your code. 
+
+3. On that note, limit the width of your code. (80 columns?). 
+
+4. Limit length of functions. Ideally, limit each function to a logical seperate tasks. This helps to visually see the whole function, and also helps to find where in the code problems are occuring, rather than somewhere vague in a massive function. 
+
+## Dates and Times
+
+Dates are recommended by the "dates" class, and times can be "POSIXct" or "POSIXlt". Dates are stored as the number of days since 1970-01-01, and times are recorded as seconds. 
+
+POSIXct: Times are recorded as a massive integer of seconds. This is useful in a dataframe where only one class of vector can be used. 
+
+POSIXlt: Times are recorded as a list, including seconds, day of week, year, month, day of month, etc. 
+
+There are some generic functions that work on time, like; weekdays(), months(), quarters(). 
+
+strptime() is a useful function, as it turns written dates (January 10, 2019 10:19) into a POSIXlt class. 
+
+### Operations on Dates and Times
+
+You can use operations (really just + and -, as well as logical ones <, >, ==) on dates and times. This allows you to determine time between dates. 
+
+These functions can also allow you to specify timezones, and R still keeps track of leap years and other things and adjusts accordingly. 
