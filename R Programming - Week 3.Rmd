@@ -1,5 +1,5 @@
 ---
-title: "R Programming - Week 3"
+title: "R Programming - Week 3: Loop Functions & Debugging"
 author: "Mike Talley"
 date: "2/28/2022"
 output: html_document
@@ -8,23 +8,103 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+# Overview
 
-## R Markdown
+We already learned about loop functions, but the for / if loops (while useful for programming) can be kind of bulky on the command line. There are a handful of more compact loop functions that can make things much simpler. Often times, these functions have the word "apply" in them, as they are applied to a set of objects.
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+## lapply
+**Loop over a list and evaluate a function on each element**
+*What comes out is ALWAYS a list* 
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+lapply takes three arguments: (1), a list x; (2) a function or the name of a function FUN; (3) other arguments via its ... argument. *If* x *is not a list, it WILL BE COERCED using* as.list. Because of this, lapply will ALWAYS return a list, regardless of the class of input. 
 
-```{r cars}
-summary(cars)
+```{r}
+x <- 1:4  # Vector of 1-4
+lapply(x, runif, min = 0, max = 10)   # Returns random number between 1 & 10. Will have a list of 1:4 elements.
 ```
 
-## Including Plots
+lapply and the others make heavy use of *anonymous* functions. This is a function that exists ONLY within the lapply function, and nowhere else. So when lappy is done, the function/action ceases to exist. 
 
-You can also embed plots, for example:
+```{r}
+x <- list(a = matrix(1:4, 2, 2), b = matrix(1:6, 3, 2))   # List of two matrices
+x     # View matrices
+lapply(x, function(elt) elt[,1])    # Define and immediately call a function that returns the first column.
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+# This function elt() only exists inside of lapply, and cannot be called later outside of this command line. 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## sapply
+**Same as lapply but will try to simplify the result**
+
+sapply will try to simplify lapply results if it's possible. 
+
+- If the results is a list where every element is length 1, then a **vector** is returned.
+
+- If the results is a list where every element is a vector of the same length (>1), a **matrix** is returned.
+
+- If it *can't* figure things out, a **list** is returned. 
+
+## apply
+**Apply is used to evaluate a function (often anonymous) over the margins of an array**
+
+Most often, it is used to apply a function to the rows or columns of a matrix. It can be used with general arrays, i.e. taking the average of an array of matrices. Contrary to popular belief, it's not really any faster than writing a for loop, but it works in one line, so you have to type less.
+
+***Less typing is always better, because good programmers are always lazy***
+
+str(apply)
+function (X, MARGIN, FUN, ...)
+
+- X is an array
+- MARGIN is an interger vector indicating which margins should be "retained"
+- FUN is a function to be applied
+- ... is arguments to be passed to FUN
+
+```{r}
+# Function to return the mean of each of the columns in a matrix
+
+x <- matrix(rnorm(200), 20, 10)   # Create matrix
+apply(x, 2, mean)                 # Call the matrix, get mean of each column. Returns a vector of length=10.
+
+# The "2" above is tricky to understand at first. A matrix has two dimensions (rows x cols). By listing "2", we are saying we want to keep the 2nd dimension (cols). So, the function is removing the rows, and just returning the means of each column. Below, we will will keep the rows (1), and discard the cols (2), to get the sum of each of the 20 rows. 
+
+apply(x, 1, sum)
+```
+
+### **col/row sums and means**
+
+For sums and means of matrix dimensions, we have shortcuts. These will be much faster than their apply counterparts, although you won't notice unless using large matrices.
+
+- rowSums = apply(x, 1, sum)
+
+- rowMeans = apply(x, 1, mean)
+
+- colSums = apply(x, 1, sum)
+
+- colMeans = apply(x, 1, mean)
+
+### Other Ways to Apply
+
+Apply can also creat a matrix when running a function. Take the previous example, with 20 rows and 10 columns. Below, we will ask for the 25% and 75% quantiles of the rows. To display this info, it will; 1 - "remove" the columns, 2 - calculate quantiles for each row, 3 - Output the answers in a matrix, with two rows for quantiles, and 20 columns, which are for each row in the prior matrix.
+
+```{r}
+x <- matrix(rnorm(200), 20, 10)
+apply(x, 1, quantile, probs = c(0.25, 0.75))
+```
+
+We can make a 3D array (ten 2x2 matrices on top of each other), and then "remove" the third dimension (10), to return a mean of that dimension. Trippy stuff!
+
+```{r}
+a <- array(rnorm(2 * 2 * 10), c(2, 2, 10))    # 3D array
+apply(a, c(1,2), mean)                        # apply(array, remove 3rd dim, what did we do with it)
+rowMeans(a, dims =  2)                        # Same idea, collapsing it into a 2D object.
+```
+
+## tapply
+**apply a function over subsets of a vector**
+
+## mapply
+**multivate version of lapply**
+
+## Split
+**an auxiliary function to split up data. Extra useful when combined with lapply**
+
