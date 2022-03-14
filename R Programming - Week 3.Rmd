@@ -102,9 +102,115 @@ rowMeans(a, dims =  2)                        # Same idea, collapsing it into a 
 ## tapply
 **apply a function over subsets of a vector**
 
+Used to apply a function over subsets of a vector. Not quite sure why it's called tapply, but let's roll with it.
+str(tapply)
+function (x, INDEX, FUN = NULL, ..., simplify = TRUE)
+  - x is the vector / data to be looked at.
+  
+  - INDEX is a factor or a list of factors (aka, how to select or subset men/women in a list of patients)
+  
+  - FUN is a function to be applied
+  
+  - ... contains other arguments to be passed to FUN
+  
+  - simplify, should we simplify the result?
+
 ## mapply
-**multivate version of lapply**
+**multivariate version of lapply**
+
+The function written within mapply can work across multiple lists in parallel, rather than needing a for loop. The number of arguments in this function must be at least the number of lists being passed. Below are two ways to write a function, the long way, and a shorter way using mapply.
+```{r}
+## First method
+list(rep(1,4), rep(2,3), rep(3,2), rep(4,1))
+
+## Second method
+mapply(rep, 1:4, 4:1)
+```
+
+Another longer example... Below is a function to return a random selection of numbers with a specified mean and sd. 
+```{r}
+noise <- function(n, mean, sd) {
+  rnorm(n, mean, sd)
+}
+
+## It works with a simple number, like n = 5)
+noise(5, 1, 2)
+
+## It does NOT however, work with a vector numbers, like n = 1:5. It will not return a vector like we want. 
+noise(1:5, 1:5, 2)
+
+## It WILL work if we pass the function through the mapply function. 
+mapply(noise, 1:5, 1:5, 2)
+
+## Typing this mapply function out the long way would look like...
+list(noise(1, 1, 2), noise(2, 2, 2),
+     noise(3, 3, 2), noise(4, 4, 2),
+     noise(5, 5, 2))
+```
 
 ## Split
 **an auxiliary function to split up data. Extra useful when combined with lapply**
 
+Split takes a vector or other objects, and splits it into groups determined by a factor or list of factors. Unlike tapply, which can be applied over different subsets of a vector, another option is to use split() in conjunction with lapply() or sapply(). 
+
+str(split)
+function (x, f, drop = FALSE, ...)
+
+- x is a vector (or list) or data frame.
+
+- f is a factor (or coerced to one) or a list of factors.
+
+- drop indicates whether empty factors levels should be dropped. 
+
+***split always returns a list back***
+
+A common method is split() followed by lapply(). You could theoretically used mapply for the same (but more succint) task, but either way works. 
+
+```{r}
+## Split the airquality dataset up by month.
+s <- split(airquality, airquality$Month)
+
+## Get the mean for each of three variables, based on month. Note the NA values.
+lapply(s, function(x)
+  colMeans(x[, c("Ozone", "Solar.R", "Wind")])
+)
+
+## sapply will combine all of this into an easier to read matrix. Note that NAs have been removed. 
+sapply(s, function(x)
+  colMeans(x[, c("Ozone", "Solar.R", "Wind")], na.rm = TRUE)
+)
+```
+
+# Debugging Tools
+
+## Diagnosing the Problem
+
+Questions to ask when you get an error / warning:
+
+- What was your input? How did you call the function?
+
+- What were you expecting? Output, messages, other results?
+
+- What did you get?
+
+- How does what you get differ from what you were expecting?
+
+- Were your expectations correct in the first place?
+
+- Can you reproduce the problem (exactly)?
+
+## Debugging Tools in R
+
+- **Traceback**: Prints out the function call stack after an error occurs.
+
+- **debug**: Flags a function for "debug" mode, which allows you to step through execution of a function, one line at a time. 
+
+- **browser**: Suspends the execturion of a funciton wherever it is called and puts the function in debug mode.
+
+- **trace**: Allows you to insert debugging code into a function at specific places.
+
+- **recover**: Allows you to modify the error behavior so that you can browse the functino call stack.
+
+Less elegant options also include inserting print/cat statements throughout your function. 
+
+***Debugging tools are not a substitute for thinking! Write good code FIRST***
