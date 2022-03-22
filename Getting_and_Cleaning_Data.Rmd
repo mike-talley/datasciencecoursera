@@ -1,0 +1,124 @@
+---
+title: "Getting_and_Cleaning_Data"
+author: "Mike Talley"
+date: "3/21/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+All steps taken to process and clean data should be carefully documented, as it may have downstream effects on the data analysis. 
+
+# Components of Tidy Data
+
+There are four things you should have when you are done processing data.
+
+1. The raw data
+2. A tidy data set
+3. A code book describing each variable and its values in the tidy data set. 
+4. An explicit and exact recipe you used to go from 1 -> 2 -> 3.
+
+## The Raw Data
+
+Data is only raw (for you) if...
+
+1. You ran no software on the data.
+2. You did not manipulate any of the numbers in the data.
+3. You did not remove any data from the data set.
+4. You did not summarize the data in any way. 
+
+## The Tidy Data
+
+1. Each variable you measure should be in one column.
+2. Each different observation of that variable should be a different row. 
+3. There should be one table for each "kind" of variable.
+4. If you have multiple tables, they should include a column that allows them to be linked.
+
+You should always make an effort to include a row at the top of the table with descriptive column names. You should also aim to have one table per file, rather than multiple tables like people often do in Excel files. 
+
+## The Code Book
+
+1. Information about the variables (including units!) in the data set not contained in the tidy dta.
+2. Information about the summary choices you made. 
+3. Information about the experimental study design you used. 
+
+Many people choose to format this document in a Word/text file. RMarkdown works great for this. 
+There should also be a section called "Study Design" that has a thorough description of how you collected the data, along with a section called "Code Book", that describes each variable and its units. 
+
+## The Instruction List
+
+1. Ideally a computer script (R, Python, etc.)
+2. Input is the raw data
+3. Output is the processed, tidy data
+4. There are NO parameters to the script. It should work just fine on its own. 
+
+In some cases, R will not do EVERYTHING you need it to when cleaning the data. If that's true, you should write out clear instructions that go above and beyond the necessary amount of detail, to ensure the recipe is still able to be followed. 
+
+  *Example: Step 1: Take the raw file, run version 3.1.2 of ____ software using parameters ___.*
+  
+# Downloading Files
+
+We need to use R to select files, rather than picking them by hand, because it allows this step to also be reproducible. 
+
+## Finding The Files and Where to Find Them
+
+When using R, we will use "directories", or specific locations in our computer space. We can use `getwd()` to check what directory we are currently in, and `setwd()` to change/set the path we want to be working in. An *absolute* path would be naming the directory itself, where as a *relative* path would set a general directory, and then navigate up or down in the command to reach the desired final destination.
+
+- Relative: `setwd("./data"), setwd("../)` to naviagate up
+- Absolute: `setwd("./data")` to be in an exact place. 
+
+To check if a directory exists, we can use the `file.exists()` command, and if it doesn't, we can create one with `dir.create()`. Below is a function you could use to check for and create a directory all at once. 
+
+```{r eval = FALSE}
+if (!file.exists("data")) {
+  dir.create("data")
+}
+```
+
+## Getting Data From the Internet
+
+We can download files from the internet either by hand, or with R, but as always, using scripts to do things makes it more reproducible. We would use the `download.file()` function to achieve this. It's important to outline specific parameters such as; *url*, *destfile*, and *method*. This command can download most files, regardless of their format. 
+
+## Reading Excel Files
+
+Most data scientists dislike Excel, but because it is so common, it's useful to know how to read these files into R.
+
+`write.xlsx` will output an Excel file.
+`read.xlsx` or `read.xlsx2` are used to read in the files. 
+
+In general, storing in CSV or TAB files is better, as they are easier to read and do not require other users to have Excel.
+
+## Reading XML
+
+*Extensible Markup Language (XML)*
+
+This is frequently used to store structured data, particularly data obtained from web scraping. There are two parts to this: Markup, which is labels to give the text structure, and Content, which is the actual text itself. 
+
+Tags correspond to general labels.
+- Start tags: <section>
+- End tags: </section>
+- Empty tags: <line-break />
+
+Elements are specific examples of tags.
+- <Greeting> Hello, world </Greeting>
+
+Attributes are components of the label.
+```{r eval = FALSE}
+- <img src="jeff.jpg" alt="instructor"/>
+- <step number="3"> Connect A to B. </step>
+```
+
+*Much more detailed notes on this are available in the lecture content.*
+
+## Reading JSON
+
+*Javascript Object Notation (JSON)*
+
+This is a common format for data from APIs (applications programming interfaces).
+Again, more information can be found in the lecture.
+
+# The data.table Package
+
+
