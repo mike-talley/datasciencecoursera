@@ -120,5 +120,101 @@ This is a common format for data from APIs (applications programming interfaces)
 Again, more information can be found in the lecture.
 
 # The data.table Package
+```{r echo = FALSE}
+library(data.table)
+```
+Data table is often a lot faster alternative to using traditional data frames in R. All functions that work on data frames will also work on data tables, but because it's written in C, it is much faster, particularly at subsetting, grouping and updating. 
+Using the `table()` function, you can get a summary of all the data tables in memory. 
+
+***It's important to note that there is a different set of syntax for data.tables***
+
+## Subsetting
+
+```{r}
+## Create a dataframe
+DT <- data.table(x = rnorm(9), y = rep(c("a", "b", "c"), each = 3), z = rnorm(9))
+
+## A specific row
+DT[2,]
+
+## When you want specific values in a column
+DT[DT$y == "a", ]
+
+## If you don't specify, it automatically returns rows
+DT[c(2,3)]
+
+## This is where it diverges. Traditional calls to subset columns do NOT work
+DT[, c(2,3)]
+```
+
+Traditionally, "expressions" in R are statements enclosed in curly brackets. In data tables however, anything after the comma is an expression. If you pass a list into a data table call, it will evaluate the object. Note that in the example below, you do not need to put column names in parenthesis, as R will just recognize them by name. 
+
+```{r}
+## Get the mean of column x, and sum of column z
+DT[, list(mean(x), sum(z))]
+
+## Create a table out of column y
+DT[, table(y)]
+```
+
+## Adding New Columns
+
+```{r}
+## Column w is equal to column z squared.
+DT[, w:= z^2]
+```
+
+One of the nuances to data tables is that they do not create a new memory object. When editing a data FRAME, a new object is stored to the memory, which could bog a computer down with large data sets. Data TABLES however do not, they just edit it, which allows you to more easily work with large data sets. You must be careful when connecting objects though. Because copies are not made, editing object one will automatically edit object two. If you want to make a copy, you will need to explicity say so. 
+
+## Multiple Operations
+
+In the code below, we can do a multi-step operation at once. Inside of the curly brackets, we are assigning the value of (x+z) to the temporary object `tmp`. After the semicolon, we then get the log2 of `tmp + 5`. Because that is the last thing listed in the expression, it is what will be returned. 
+
+```{r}
+DT[, m:= {tmp <- (x+z); log2(tmp+5)}]
+```
+
+## plyr Like Operations
+
+```{r}
+## Creating a vector that returns TRUE, when x is > 0
+DT[, a:= x>0]
+
+## For values where a = TRUE, get mean(x+w). Get a different mean(x+w) for when a = FALSE. We are grouping this function by a.
+DT[, b:= mean(x+w), by = a]
+```
+
+## Special Variables
+
+`.N` is an integer of length 1, containing the number of times something appears. The .N operation is much faster than the $ equivalent in a data frame. 
+
+```{r}
+## Data table with a LOT of letters. 
+DTlet <- data.table(x = sample(letters[1:3], 1E5, TRUE))
+
+## How many times does each x value appear
+DT[, .N, by = x]
+```
+
+## Keys
+
+Keys are unique to data tables, and allow you to quickly reference and subset certain things, along with other useful functions. Below we create a table, and set the key to the `x` column. Then when we go to subset the whole table, it searches for the value 'a' within the predefined *key*.
+
+```{r}
+DTkey <- data.table(x = rep(c("a", "b", "c"), each = 100), y =  rnorm(300))
+setkey(DTkey, x)
+DTkey['a']
+```
+
+You can also merge data tables together, as long as they have the same vector / column somewhere in there.
+
+```{r}
+DT1 <- data.table(x = c('a', 'a', 'b', 'dt1'), y = 1:4)
+DT2 <- data.table(x = c('a', 'b', 'dt2'), z = 5:7)
+setkey(DT1, x); setkey(DT2, x)
+merge(DT1, DT2)
+```
+
+
 
 
