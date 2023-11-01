@@ -1,5 +1,5 @@
 ## Set wd
-setwd("~/Documents/R/Coursera/datasciencecoursera")
+setwd("~/Documents/R/Coursera/datasciencecoursera/1 - R Programming")
 
 ## Read and inspect outcome data
 outcome <- read.csv("./rprog_data_ProgAssignment3-data/outcome-of-care-measures.csv", colClasses = "character")
